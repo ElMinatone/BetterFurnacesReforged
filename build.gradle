@@ -4,15 +4,18 @@ import groovy.json.JsonParserType
 import groovy.json.JsonOutput
 
 plugins {
-    id "dev.architectury.loom"
     id "me.modmuss50.mod-publish-plugin" version "0.7.4"
     id 'maven-publish'
 }
 
+def loader = property("loom.platform")
+def useLoomNoRemap = loader == "neoforge" && stonecutter.current.version.startsWith("26.")
+
+apply plugin: useLoomNoRemap ? "dev.architectury.loom-no-remap" : "dev.architectury.loom"
+
 base.archivesName = project.archives_base_name
 version = stonecutter.current.version + "-" + mod_version
 group = rootProject.maven_group
-def loader = property("loom.platform")
 
 repositories {
     maven { url "https://maven.neoforged.net/releases/" }
@@ -57,9 +60,16 @@ configurations.configureEach {
 }
 dependencies {
     minecraft "com.mojang:minecraft:${stonecutter.current.version}"
-    mappings loom.officialMojangMappings()
+    if (!useLoomNoRemap) {
+        mappings loom.officialMojangMappings()
+    }
 
-    modApi("wily.factory_api:factory_api-${loader}:${stonecutter.current.version}-${factory_api_version}")
+    def factoryApi = "wily.factory_api:factory_api-${loader}:${stonecutter.current.version}-${factory_api_version}"
+    if (useLoomNoRemap) {
+        implementation(factoryApi)
+    } else {
+        modApi(factoryApi)
+    }
     if (stonecutter.eval(stonecutter.current.version, "<=1.21.1")) {
         modCompileOnlyApi("mezz.jei:jei-${stonecutter.current.version}-${loader}-api:${jei_version}")
         modImplementation("mezz.jei:jei-${stonecutter.current.version}-${loader}:${jei_version}")
@@ -82,23 +92,26 @@ dependencies {
 def aw = "${mod_id}.accesswidener"
 
 loom {
-    accessWidenerPath.set(getRootProject().file("src/main/resources/${aw}"))
+    if (!useLoomNoRemap) {
+        accessWidenerPath.set(getRootProject().file("src/main/resources/${aw}"))
+    }
 
     if (loader == "forge") forge {
         convertAccessWideners.set(true)
         mixinConfigs("${mod_id}.mixins.json")
     }
     mixin {
-        useLegacyMixinAp = true
+        useLegacyMixinAp = !useLoomNoRemap
         defaultRefmapName = "${mod_id}.refmap.json"
     }
 }
 
-def isJava21 = stonecutter.eval(stonecutter.current.version, ">=1.20.5")
+def javaRelease = stonecutter.current.version.startsWith("26.") ? 25 : stonecutter.eval(stonecutter.current.version, ">=1.20.5") ? 21 : 17
+def javaVersion = JavaVersion.toVersion(javaRelease)
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
-    options.release = isJava21 ? 21 : 17
+    options.release = javaRelease
 }
 
 def buildJar = tasks.create("buildJar", Copy.class) {
@@ -113,11 +126,13 @@ afterEvaluate {
 
 java {
     withSourcesJar()
-    sourceCompatibility = isJava21 ? JavaVersion.VERSION_21 : JavaVersion.VERSION_17
-    targetCompatibility = isJava21 ? JavaVersion.VERSION_21 : JavaVersion.VERSION_17
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
 }
-remapJar {
-    if (loader == "neoforge") atAccessWideners.add aw
+if (!useLoomNoRemap) {
+    remapJar {
+        if (loader == "neoforge") atAccessWideners.add aw
+    }
 }
 ext {
     releaseChangelog = {
@@ -210,8 +225,9 @@ processResources {
 }
 
 tasks.register('renameJarForPublication', Zip) {
-    dependsOn remapJar
-    from remapJar.archiveFile.map { zipTree(it) }
+    def publicationJar = tasks.named(useLoomNoRemap ? "jar" : "remapJar")
+    dependsOn publicationJar
+    from publicationJar.flatMap { it.archiveFile }.map { zipTree(it) }
     archiveExtension = "jar"
     metadataCharset "UTF-8"
     destinationDirectory = base.libsDirectory
@@ -293,7 +309,7 @@ publishMods {
 
     curseforge {
         minecraftVersions.addAll versions
-        if (isJava21) javaVersions.add(JavaVersion.VERSION_21)
+        if (javaRelease >= 21) javaVersions.add(javaVersion)
         else javaVersions.addAll(JavaVersion.VERSION_17,JavaVersion.VERSION_18)
         clientRequired = true
         serverRequired = true

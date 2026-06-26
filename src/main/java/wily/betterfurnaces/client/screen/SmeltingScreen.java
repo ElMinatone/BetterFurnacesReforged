@@ -3,10 +3,10 @@ package wily.betterfurnaces.client.screen;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import wily.betterfurnaces.BetterFurnacesReforged;
@@ -31,17 +31,21 @@ import java.util.List;
 import static wily.betterfurnaces.client.screen.BetterFurnacesDrawables.*;
 
 public class SmeltingScreen<T extends SmeltingMenu> extends AbstractBasicScreen<T> {
-    public static final ResourceLocation GUI = BetterFurnacesReforged.createModLocation("textures/container/furnace_gui.png");
+    public static final Identifier GUI = BetterFurnacesReforged.createModLocation("textures/container/furnace_gui.png");
     Inventory playerInv;
 
     private FactoryDrawableButton showConfigButton;
 
     public SmeltingScreen(T t, Inventory inv, Component name) {
-        super(t, inv, name);
+        this(t, inv, name, 176, 166);
+    }
+
+    protected SmeltingScreen(T t, Inventory inv, Component name, int imageWidth, int imageHeight) {
+        super(t, inv, name, imageWidth, imageHeight);
         playerInv = inv;
     }
 
-    public ResourceLocation getGuiLocation() {
+    public Identifier getGuiLocation() {
         return GUI;
     }
 
@@ -93,12 +97,12 @@ public class SmeltingScreen<T extends SmeltingMenu> extends AbstractBasicScreen<
     }
 
     @Override
-    public void render(GuiGraphics graphics, int i, int j, float f) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int i, int j, float f) {
         showConfigButton.select(getMenu().showInventoryButtons());
         if (showConfigButton.isSelected())
             showConfigButton.tooltips(getShiftInfoGui());
         else showConfigButton.tooltip(Component.translatable("tooltip." + BetterFurnacesReforged.MOD_ID + ".gui_open"));
-        super.render(graphics, i, j, f);
+        super.extractRenderState(graphics, i, j, f);
         showConfigButton.clearTooltips();
     }
 
@@ -120,28 +124,26 @@ public class SmeltingScreen<T extends SmeltingMenu> extends AbstractBasicScreen<
     }
 
     @Override
-    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(this.font, getTitle(), this.titleLabelX, this.titleLabelY, 4210752, false);
-        graphics.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 4210752, false);
-        int actualMouseX = mouseX - leftPos;
-        int actualMouseY = mouseY - topPos;
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        graphics.text(this.font, getTitle(), this.titleLabelX, this.titleLabelY, 4210752, false);
+        graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 4210752, false);
         if (getMenu().be.isLiquid() && fluidTankDraw().inMouseLimit(mouseX, mouseY))
-            graphics.renderTooltip(font,getFluidTooltip("tooltip.factory_api.fluid_stored", menu.be.getFuelTank()).withStyle(ChatFormatting.GOLD), actualMouseX, actualMouseY);
+            graphics.setTooltipForNextFrame(font,getFluidTooltip("tooltip.factory_api.fluid_stored", menu.be.getFuelTank()).withStyle(ChatFormatting.GOLD), mouseX, mouseY);
         if (getMenu().be.hasUpgrade(ModObjects.GENERATOR.get()) && generatorTankDraw().inMouseLimit(mouseX, mouseY)){
             ItemStack gen = getMenu().be.getUpgradeSlotItem(ModObjects.GENERATOR.get());
-            graphics.renderTooltip(font, getFluidTooltip("tooltip.factory_api.fluid_stored", FactoryAPIPlatform.getItemFluidHandler(gen)).withStyle(ChatFormatting.BLUE), actualMouseX, actualMouseY);
+            graphics.setTooltipForNextFrame(font, getFluidTooltip("tooltip.factory_api.fluid_stored", FactoryAPIPlatform.getItemFluidHandler(gen)).withStyle(ChatFormatting.BLUE), mouseX, mouseY);
         }if ((getMenu().be.hasUpgrade(ModObjects.ENERGY.get()) || getMenu().be.hasUpgrade(ModObjects.GENERATOR.get())) && energyTankDraw().inMouseLimit(mouseX,mouseY)){
-            graphics.renderTooltip(font, StorageStringUtil.getEnergyTooltip("tooltip.factory_api.energy_stored", getMenu().be.energyStorage), actualMouseX, actualMouseY);
+            graphics.setTooltipForNextFrame(font, StorageStringUtil.getEnergyTooltip("tooltip.factory_api.energy_stored", getMenu().be.energyStorage), mouseX, mouseY);
         }
         if (getMenu().be.hasXPTank() && xpTankDraw().inMouseLimit(mouseX, mouseY))
-            graphics.renderTooltip(font, getFluidTooltip("tooltip.factory_api.fluid_stored", getMenu().be.getXpTank()).withStyle(ChatFormatting.GREEN), actualMouseX, actualMouseY);
+            graphics.setTooltipForNextFrame(font, getFluidTooltip("tooltip.factory_api.fluid_stored", getMenu().be.getXpTank()).withStyle(ChatFormatting.GREEN), mouseX, mouseY);
     }
 
     public static MutableComponent getFluidTooltip(String key, IPlatformFluidHandler tank){
         return StorageStringUtil.getFluidTooltip(key, tank.getFluidInstance(), tank.getMaxFluid(), true);
     }
 
-    protected void blitSmeltingSprites(GuiGraphics graphics) {
+    protected void blitSmeltingSprites(GuiGraphicsExtractor graphics) {
         int i;
         if ((this.getMenu()).getBurnTime() > 0) {
             i = (this.getMenu()).getBurnLeftScaled(13);
@@ -162,10 +164,11 @@ public class SmeltingScreen<T extends SmeltingMenu> extends AbstractBasicScreen<
     }
 
     @Override
-    protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+    public void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
+        wily.factoryapi.util.FactoryScreenUtil.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         FactoryGuiGraphics.of(graphics).blit(getGuiLocation(), leftPos, topPos, 0, 0, imageWidth, imageHeight);
         blitSmeltingSprites(graphics);
+        super.extractContents(graphics, mouseX, mouseY, partialTicks);
         if (getMenu().be.hasUpgrade(ModObjects.ENERGY.get()) || getMenu().be.hasUpgrade(ModObjects.GENERATOR.get())) {
             boolean storage = menu.be.hasUpgradeType(UpgradeItem.Type.STORAGE);
             FactoryGuiGraphics.of(graphics).blit(WIDGETS, energyTankDraw().getX(), energyTankDraw().getY(), 240 + (storage ? 8 : 0), 34 * (storage ? 2 : 1), 16 - (storage ? 8 : 0), 34);
@@ -198,7 +201,7 @@ public class SmeltingScreen<T extends SmeltingMenu> extends AbstractBasicScreen<
     }
 
 
-    protected void blitSlotsLayer(GuiGraphics graphics, boolean input, boolean both, boolean fuel, boolean output){
+    protected void blitSlotsLayer(GuiGraphicsExtractor graphics, boolean input, boolean both, boolean fuel, boolean output){
         boolean storage = menu.be.hasUpgradeType(UpgradeItem.Type.STORAGE);
         if (!getMenu().be.hasUpgrade(ModObjects.GENERATOR.get())) {
             if (input || both) {

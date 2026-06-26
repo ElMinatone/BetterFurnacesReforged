@@ -18,6 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
@@ -26,6 +27,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -42,6 +44,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
@@ -85,7 +88,7 @@ public class SmeltingBlock extends BFRBlock implements EntityBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState blockState) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override
@@ -99,7 +102,8 @@ public class SmeltingBlock extends BFRBlock implements EntityBlock {
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
         ItemStack drop = new ItemStack(this.asItem());
-        ItemStack stack = builder.getOptionalParameter(LootContextParams.TOOL);
+        ItemInstance tool = builder.getOptionalParameter(LootContextParams.TOOL);
+        ItemStack stack = tool instanceof ItemStack itemStack ? itemStack : ItemStack.EMPTY;
         SmeltingBlockEntity be = (SmeltingBlockEntity) builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
         if (FactoryItemUtil.getEnchantmentLevel(stack, Enchantments.SILK_TOUCH, builder.getLevel().registryAccess()) > 0 && stack.isCorrectToolForDrops(state)) {
             ItemStack colorUpgrade = be.getUpgradeStack(ModObjects.COLOR.get());
@@ -110,7 +114,9 @@ public class SmeltingBlock extends BFRBlock implements EntityBlock {
             drop.setTag(tag);
             *///?} else {
             if (!colorUpgrade.isEmpty()) drop.set(ModObjects.BLOCK_TINT.get(), colorUpgrade.getOrDefault(ModObjects.BLOCK_TINT.get(), ModObjects.BlockTint.WHITE));
-            BlockItem.setBlockEntityData(drop, be.getType(), be.getUpdateTag(be.getLevel().registryAccess()));
+            TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, be.getLevel().registryAccess());
+            be.saveWithoutMetadata(output);
+            BlockItem.setBlockEntityData(drop, be.getType(), output);
             drop.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(be.inventory.getItems()));
             //?}
         }
@@ -134,7 +140,7 @@ public class SmeltingBlock extends BFRBlock implements EntityBlock {
     public InteractionResult /*? if >=1.20.5 {*/useWithoutItem/*?} else {*//*use*//*?}*/(BlockState state, Level level, BlockPos pos, Player player/*? if <1.20.5 {*//*, InteractionHand hand*//*?}*/, BlockHitResult blockHitResult) {
         SmeltingBlockEntity be = (SmeltingBlockEntity) level.getBlockEntity(pos);
 
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         } else {
             //? if <1.20.5 {
@@ -295,7 +301,7 @@ public class SmeltingBlock extends BFRBlock implements EntityBlock {
     }
 
     @Override
-    public int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos blockPos) {
+    protected int getAnalogOutputSignal(BlockState blockState, Level level, BlockPos blockPos, Direction direction) {
         SmeltingBlockEntity be = ((SmeltingBlockEntity) level.getBlockEntity(blockPos));
         if (be != null) {
             int mode = be.furnaceSettings.getRedstone(0);
@@ -329,6 +335,6 @@ public class SmeltingBlock extends BFRBlock implements EntityBlock {
     }
     @Nullable
     protected static <T extends BlockEntity> BlockEntityTicker<T> createFurnaceTicker(Level level, BlockEntityType<T> blockEntityType, BlockEntityType<? extends SmeltingBlockEntity> blockEntityType1) {
-        return level.isClientSide ? null : createTickerHelper(blockEntityType, blockEntityType1, SmeltingBlockEntity::tick);
+        return level.isClientSide() ? null : createTickerHelper(blockEntityType, blockEntityType1, SmeltingBlockEntity::tick);
     }
 }

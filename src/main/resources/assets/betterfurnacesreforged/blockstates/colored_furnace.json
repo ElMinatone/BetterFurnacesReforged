@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
+    "lit=false": {
       "model": "betterfurnacesreforged:block/colored_furnace"
+    },
+    "lit=true": {
+      "model": "betterfurnacesreforged:block/colored_furnace_on"
     }
   }
 }

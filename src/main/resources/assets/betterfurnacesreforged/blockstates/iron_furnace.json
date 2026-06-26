@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
+    "lit=false": {
       "model": "betterfurnacesreforged:block/iron_furnace"
+    },
+    "lit=true": {
+      "model": "betterfurnacesreforged:block/iron_furnace_on"
     }
   }
 }

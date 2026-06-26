@@ -47,7 +47,7 @@ public class SlotOutput extends HideableSlot {
     protected void onQuickCraft(ItemStack stack, int p_75210_2_) {
         if (player != null) {
             stack.onCraftedBy(/*? if <1.21.5 {*//*this.player.level(), *//*?}*/this.player, this.removeCount);
-            if (!this.player.level().isClientSide && this.be instanceof SmeltingBlockEntity smeltBe) {
+            if (!this.player.level().isClientSide() && this.be instanceof SmeltingBlockEntity smeltBe) {
                 smeltBe.unlockRecipes(this.player);
 
             }

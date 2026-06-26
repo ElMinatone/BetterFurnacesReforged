@@ -12,7 +12,7 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.util.ColorRGBA;
 import net.minecraft.network.codec.StreamCodec;
 //?}
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
@@ -53,7 +53,7 @@ public class ModObjects {
 
     public static final RegisterListing.Holder<CreativeModeTab> ITEM_GROUP = TABS.add("bfr_creative_tab",()-> new CreativeModeTab.Builder(CreativeModeTab.Row.TOP, 0).title(Component.translatable("itemGroup." + MOD_ID + ".tab")).icon(()-> ModObjects.EXTREME_FURNACE.get().asItem().getDefaultInstance()).displayItems(((itemDisplayParameters, output) -> ITEMS.forEach(h-> output.accept(h.get().getDefaultInstance())))).build());
 
-    private static Item.Properties uniqueStackItemProperties(ResourceLocation id){
+    private static Item.Properties uniqueStackItemProperties(Identifier id){
         return FactoryAPIPlatform.setupItemProperties(new Item.Properties(), id).stacksTo(1);
     }
 

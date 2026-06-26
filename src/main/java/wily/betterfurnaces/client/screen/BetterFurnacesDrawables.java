@@ -1,12 +1,12 @@
 package wily.betterfurnaces.client.screen;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import wily.betterfurnaces.BetterFurnacesReforged;
 import wily.factoryapi.FactoryAPI;
 import wily.factoryapi.base.client.drawable.IFactoryDrawableType;
 
 public class BetterFurnacesDrawables {
-    public static final ResourceLocation WIDGETS = BetterFurnacesReforged.createModLocation("textures/container/widgets.png");
+    public static final Identifier WIDGETS = BetterFurnacesReforged.createModLocation("textures/container/widgets.png");
     public static final IFactoryDrawableType.DrawableProgress ENERGY_CELL = createProgress(new int[]{240,0,16,34},false, IFactoryDrawableType.Direction.VERTICAL);
     public static final IFactoryDrawableType.DrawableProgress THIN_ENERGY_CELL = createProgress(new int[]{248,102,8,34},false, IFactoryDrawableType.Direction.VERTICAL);
 

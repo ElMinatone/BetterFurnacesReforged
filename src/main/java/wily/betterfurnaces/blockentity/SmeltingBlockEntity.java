@@ -10,7 +10,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -40,6 +40,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Nullable;
@@ -77,7 +79,7 @@ public class SmeltingBlockEntity extends InventoryBlockEntity implements /*? if 
     public int cookTime;
     public int totalCookTime = this.getCookTime();
     private int recipesUsed;
-    private final Object2IntOpenHashMap<ResourceLocation> recipes = new Object2IntOpenHashMap<>();
+    private final Object2IntOpenHashMap<Identifier> recipes = new Object2IntOpenHashMap<>();
 
     public RecipeType<? extends AbstractCookingRecipe> recipeType;
 
@@ -116,7 +118,7 @@ public class SmeltingBlockEntity extends InventoryBlockEntity implements /*? if 
         return this instanceof ForgeBlockEntity;
     }
 
-    public ResourceLocation getInteractStat(){
+    public Identifier getInteractStat(){
         return recipeType == RecipeType.SMOKING ? Stats.INTERACT_WITH_SMOKER : recipeType == RecipeType.BLASTING ? Stats.INTERACT_WITH_BLAST_FURNACE : Stats.INTERACT_WITH_FURNACE;
     }
 
@@ -746,7 +748,7 @@ public class SmeltingBlockEntity extends InventoryBlockEntity implements /*? if 
 
     TagKey<Item> ore = getItemTag(FactoryAPI.createLocation(FactoryAPI.getLoader().isForgeLike() ? "forge" : "c", "ores"));
 
-    private TagKey<Item> getItemTag(ResourceLocation resourceLocation) {
+    private TagKey<Item> getItemTag(Identifier resourceLocation) {
         return TagKey.create(Registries.ITEM,resourceLocation);
     }
 
@@ -755,7 +757,7 @@ public class SmeltingBlockEntity extends InventoryBlockEntity implements /*? if 
         if (FactoryAPI.getLoader().isForgeLike()) return stack.is(getItemTag( FactoryAPI.createLocation("forge","raw_materials")));
         else {
             if (stack.is(getItemTag(FactoryAPI.createLocation("c", "raw_materials")))) return true;
-            for (TagKey<Item> tag: stack.getTags().toList()){
+            for (TagKey<Item> tag: stack.getItem().builtInRegistryHolder().tags().toList()){
                 if (!tag.location().toString().contains("raw_") ||!tag.location().toString().contains("_ores")) continue;
                 return true;
             }
@@ -809,7 +811,7 @@ public class SmeltingBlockEntity extends InventoryBlockEntity implements /*? if 
     }
 
     private ItemStack getResult(@Nullable AbstractCookingRecipe recipe, ItemStack input) {
-        ItemStack out = recipe.assemble(/*? if >=1.20.5 {*/new SingleRecipeInput(input)/*?} else {*//*new SimpleContainer(input)*//*?}*/, level.registryAccess());
+        ItemStack out = recipe.assemble(/*? if >=1.20.5 {*/new SingleRecipeInput(input)/*?} else {*//*new SimpleContainer(input)*//*?}*/);
         out.setCount(out.getCount() * getOreProcessingMultiplier(input));
         return out;
     }
@@ -871,59 +873,59 @@ public class SmeltingBlockEntity extends InventoryBlockEntity implements /*? if 
     }
 
     public FactoryItemFluidHandler getFuelTank(){
-        if ((fluidTank == null || level.isClientSide) && isLiquid()){
+        if ((fluidTank == null || level.isClientSide()) && isLiquid()){
             fluidTank = ModObjects.LIQUID.get().getFluidStorage(getUpgradeStack(ModObjects.LIQUID.get()));
         }
         return fluidTank;
     }
 
     public FactoryItemFluidHandler getXpTank(){
-        if ((xpTank == null || level.isClientSide) && hasXPTank()){
+        if ((xpTank == null || level.isClientSide()) && hasXPTank()){
             xpTank = ModObjects.XP.get().getFluidStorage(getUpgradeStack(ModObjects.XP.get()));
         }
         return xpTank;
     }
 
     public FactoryItemFluidHandler getGeneratorTank(){
-        if ((generatorTank == null || level.isClientSide) && hasUpgrade(ModObjects.GENERATOR.get())){
+        if ((generatorTank == null || level.isClientSide()) && hasUpgrade(ModObjects.GENERATOR.get())){
             generatorTank = ModObjects.GENERATOR.get().getFluidStorage(getUpgradeStack(ModObjects.GENERATOR.get()));
         }
         return generatorTank;
     }
 
     @Override
-    public void /*? if <1.20.5 {*//*load(CompoundTag tag)*//*?} else {*/loadAdditional(CompoundTag tag, HolderLookup.Provider provider)/*?}*/ {
-        super./*? if <1.20.5 {*//*load(tag)*//*?} else {*/loadAdditional(tag, provider)/*?}*/;
-        this.furnaceBurnTime = CompoundTagUtil.getInt(tag, "BurnTime").orElse(0);
-        this.cookTime = CompoundTagUtil.getInt(tag, "CookTime").orElse(0);
-        this.totalCookTime = CompoundTagUtil.getInt(tag, "CookTimeTotal").orElse(0);
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        this.furnaceBurnTime = input.getIntOr("BurnTime", 0);
+        this.cookTime = input.getIntOr("CookTime", 0);
+        this.totalCookTime = input.getIntOr("CookTimeTotal", 0);
         this.timer = 0;
         this.recipesUsed = getBurnTime(this.getInv().getItem(1));
-        if (isLiquid()) CompoundTagUtil.getCompoundTag(tag, "fluidTank").ifPresent(getFuelTank()::deserializeTag);
-        if (hasXPTank()) CompoundTagUtil.getCompoundTag(tag, "xpTank").ifPresent(getXpTank()::deserializeTag);
-        energyStorage.deserializeTag(CompoundTagUtil.getCompoundTagOrEmpty(tag, "energy"));
-        CompoundTag compoundnbt = CompoundTagUtil.getCompoundTagOrEmpty(tag, "RecipesUsed");
+        if (isLiquid()) input.read("fluidTank", CompoundTag.CODEC).ifPresent(getFuelTank()::deserializeTag);
+        if (hasXPTank()) input.read("xpTank", CompoundTag.CODEC).ifPresent(getXpTank()::deserializeTag);
+        energyStorage.deserializeTag(input.read("energy", CompoundTag.CODEC).orElseGet(CompoundTag::new));
+        CompoundTag compoundnbt = input.read("RecipesUsed", CompoundTag.CODEC).orElseGet(CompoundTag::new);
         for (String s : compoundnbt./*? if <1.21.5 {*//*getAllKeys*//*?} else {*/keySet/*?}*/()) {
             this.recipes.put(FactoryAPI.createLocation(s), CompoundTagUtil.getInt(compoundnbt, s).orElse(0));
         }
-        this.showInventorySettings = CompoundTagUtil.getInt(tag, "ShowInvSettings").orElse(0);
-        this.showOrientation = CompoundTagUtil.getBoolean(tag, "ShowOrientation").orElse(false);
+        this.showInventorySettings = input.getIntOr("ShowInvSettings", 0);
+        this.showOrientation = input.getBooleanOr("ShowOrientation", false);
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag/*? if >=1.20.5 {*/, HolderLookup.Provider provider/*?}*/) {
-        tag.putInt("BurnTime", this.furnaceBurnTime);
-        tag.putInt("CookTime", this.cookTime);
-        tag.putInt("CookTimeTotal", this.totalCookTime);
-        tag.put("energy",energyStorage.serializeTag());
-        tag.putInt("ShowInvSettings", this.showInventorySettings);
-        tag.putBoolean("ShowOrientation", this.showOrientation);
+    public void saveAdditional(ValueOutput output) {
+        output.putInt("BurnTime", this.furnaceBurnTime);
+        output.putInt("CookTime", this.cookTime);
+        output.putInt("CookTimeTotal", this.totalCookTime);
+        output.store("energy", CompoundTag.CODEC, energyStorage.serializeTag());
+        output.putInt("ShowInvSettings", this.showInventorySettings);
+        output.putBoolean("ShowOrientation", this.showOrientation);
         CompoundTag compoundnbt = new CompoundTag();
         this.recipes.forEach((recipeId, craftedAmount) -> {
             compoundnbt.putInt(recipeId.toString(), craftedAmount);
         });
-        tag.put("RecipesUsed", compoundnbt);
-        super.saveAdditional(tag/*? if >=1.20.5 {*/, provider/*?}*/);
+        output.store("RecipesUsed", CompoundTag.CODEC, compoundnbt);
+        super.saveAdditional(output);
     }
 
     protected static int getBurnTime(ItemStack stack) {
@@ -1004,15 +1006,15 @@ public class SmeltingBlockEntity extends InventoryBlockEntity implements /*? if 
     public void checkXP() {
         boolean flag2 = false;
         if (this.recipes.size() > BFRConfig.furnaceXPDropValue.get()) {
-            this.grantStoredRecipeExperience(level, new Vec3(worldPosition.getX() + level.random.nextInt(2) - 1, worldPosition.getY(), worldPosition.getZ() + level.random.nextInt(2) - 1));
+            this.grantStoredRecipeExperience(level, new Vec3(worldPosition.getX() + level.getRandom().nextInt(2) - 1, worldPosition.getY(), worldPosition.getZ() + level.getRandom().nextInt(2) - 1));
             this.recipes.clear();
         } else {
-            for (Object2IntMap.Entry<ResourceLocation> entry : this.recipes.object2IntEntrySet()) {
+            for (Object2IntMap.Entry<Identifier> entry : this.recipes.object2IntEntrySet()) {
                 var recipe = CommonRecipeManager.byId(entry.getKey(), recipeType);
                 if (recipe != null) {
                     if (entry.getIntValue() > BFRConfig.furnaceAccumulatedXPDropValue.get()) {
                         if (!flag2) {
-                            this.grantStoredRecipeExperience(level, new Vec3(worldPosition.getX() + level.random.nextInt(2) - 1, worldPosition.getY(), worldPosition.getZ() + level.random.nextInt(2) - 1));
+                            this.grantStoredRecipeExperience(level, new Vec3(worldPosition.getX() + level.getRandom().nextInt(2) - 1, worldPosition.getY(), worldPosition.getZ() + level.getRandom().nextInt(2) - 1));
                         }
                         flag2 = true;
                     }
@@ -1026,7 +1028,7 @@ public class SmeltingBlockEntity extends InventoryBlockEntity implements /*? if 
 
     @Override
     public void setRecipeUsed(/*? if <1.20.2 {*//*Recipe<?>*//*?} else {*/RecipeHolder<?>/*?}*/ recipeHolder) {
-        this.recipes.addTo(recipeHolder./*? if >=1.21.2 {*/id().location()/*?} else if >1.20.1 {*//*id()*//*?} else {*//*getId()*//*?}*/, 1);
+        this.recipes.addTo(recipeHolder./*? if >=1.21.2 {*/id().identifier()/*?} else if >1.20.1 {*//*id()*//*?} else {*//*getId()*//*?}*/, 1);
     }
 
     public /*? if <1.20.2 {*//*Recipe<?>*//*?} else {*/RecipeHolder<?>/*?}*/ getRecipeUsed(){

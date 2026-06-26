@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -20,6 +21,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.FurnaceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.ValueInput;
 import wily.betterfurnaces.BetterFurnacesReforged;
 import wily.betterfurnaces.blockentity.SmeltingBlockEntity;
 
@@ -55,7 +58,7 @@ public class TierUpgradeItem extends UpgradeItem {
     public InteractionResult useOn(UseOnContext ctx) {
         Level level = ctx.getLevel();
         BlockPos pos = ctx.getClickedPos();
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             BlockEntity fromBe = level.getBlockEntity(pos);
             BlockPlaceContext ctx2 = new BlockPlaceContext(ctx);
             BlockState state = level.getBlockState(pos);
@@ -72,7 +75,8 @@ public class TierUpgradeItem extends UpgradeItem {
                 //? if <1.20.5 {
                 /*toBe.load(toBe.saveWithoutMetadata().merge(tag));
                 *///?} else {
-                toBe.loadAdditional(toBe.saveWithoutMetadata(ctx.getLevel().registryAccess()).merge(tag),ctx.getLevel().registryAccess());
+                ValueInput input = TagValueInput.create(ProblemReporter.DISCARDING, ctx.getLevel().registryAccess(), toBe.saveWithoutMetadata(ctx.getLevel().registryAccess()).merge(tag));
+                toBe.loadAdditional(input);
                 //?}
                 if (!ctx.getPlayer().isCreative())
                     ctx.getItemInHand().shrink(1);

@@ -53,7 +53,7 @@ public class CobblestoneGeneratorBlock extends BFRBlock implements EntityBlock {
     @Override
     public InteractionResult /*? if >=1.20.5 {*/useWithoutItem/*?} else {*//*use*//*?}*/(BlockState state, Level level, BlockPos pos, Player player/*? if <1.20.5 {*//*, InteractionHand hand*//*?}*/, BlockHitResult blockHitResult) {
 
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         } else {
             //? if <1.20.5 {

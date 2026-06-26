@@ -1,0 +1,9 @@
+{
+  "parent": "betterfurnacesreforged:block/orientable_front_overlay_on",
+  "textures": {
+    "top": "betterfurnacesreforged:block/gold_top",
+    "side": "betterfurnacesreforged:block/gold_side",
+    "front": "betterfurnacesreforged:block/gold_front",
+    "overlay": "betterfurnacesreforged:block/frontactive"
+  }
+}

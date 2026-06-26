@@ -4,7 +4,7 @@ package wily.betterfurnaces;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.material.Fluid;
 import wily.betterfurnaces.util.BFRComponents;
 import wily.factoryapi.FactoryAPI;
@@ -19,9 +19,9 @@ import java.util.List;
 
 
 public class BFRConfig {
-    public static final List<ResourceLocation> supportedLiquidXps = new ArrayList<>(List.of(FactoryAPI.createLocation("mob_grinding_utils","fluid_xp"),FactoryAPI.createLocation("industrialforegoing:essence"),FactoryAPI.createLocation("cyclic","xpjuice"),FactoryAPI.createLocation("reliquary","xp_juice"),FactoryAPI.createLocation("kibe","liquid_xp")));
+    public static final List<Identifier> supportedLiquidXps = new ArrayList<>(List.of(FactoryAPI.createLocation("mob_grinding_utils","fluid_xp"),FactoryAPI.createLocation("industrialforegoing:essence"),FactoryAPI.createLocation("cyclic","xpjuice"),FactoryAPI.createLocation("reliquary","xp_juice"),FactoryAPI.createLocation("kibe","liquid_xp")));
 
-    public static ResourceLocation getLiquidXPType() {
+    public static Identifier getLiquidXPType() {
         return xpFluidType.get();
     }
     public static Fluid getLiquidXP() {
@@ -32,7 +32,7 @@ public class BFRConfig {
         return getLiquidXPType().getNamespace();
     }
 
-    public static final Codec<List<ResourceLocation>> ID_LIST_CODEC = ResourceLocation.CODEC.listOf();
+    public static final Codec<List<Identifier>> ID_LIST_CODEC = Identifier.CODEC.listOf();
     public static final FactoryConfig.StorageHandler COMMON_STORAGE = new FactoryConfig.StorageHandler(true);
     public static final FactoryConfigControl.Int TIER_SPEED_CONTROL = new FactoryConfigControl.Int(1, ()-> 400, 400);
 
@@ -60,7 +60,7 @@ public class BFRConfig {
     public static final FactoryConfig<Integer> netherhotTierSpeed = COMMON_STORAGE.register(FactoryConfig.create("netherhotTierSpeed", createSliderDisplay("netherhotTierSpeed"), TIER_SPEED_CONTROL, 8, v-> {}, COMMON_STORAGE));
     public static final FactoryConfig<Integer> extremeTierSpeed = COMMON_STORAGE.register(FactoryConfig.create("extremeTierSpeed", createSliderDisplay("extremeTierSpeed"), TIER_SPEED_CONTROL, 4, v-> {}, COMMON_STORAGE));
     public static final FactoryConfig<Integer> ultimateTierSpeed = COMMON_STORAGE.register(FactoryConfig.create("ultimateTierSpeed", createSliderDisplay("ultimateTierSpeed"), TIER_SPEED_CONTROL, 1, v-> {}, COMMON_STORAGE));
-    public static final FactoryConfig<ResourceLocation> xpFluidType = COMMON_STORAGE.register(FactoryConfig.create("experienceFluidType", createCyclingDisplay("experienceFluidType"), new FactoryConfigControl.FromInt<>(supportedLiquidXps::get, supportedLiquidXps::indexOf, supportedLiquidXps::size), supportedLiquidXps.get(0), v-> {}, COMMON_STORAGE));
-    public static final FactoryConfig<List<ResourceLocation>> additionalLiquidFuels = COMMON_STORAGE.register(FactoryConfig.create("additionalLiquidFuels", null, ()-> ID_LIST_CODEC, Collections.emptyList(), v-> {}, COMMON_STORAGE));
+    public static final FactoryConfig<Identifier> xpFluidType = COMMON_STORAGE.register(FactoryConfig.create("experienceFluidType", createCyclingDisplay("experienceFluidType"), new FactoryConfigControl.FromInt<>(supportedLiquidXps::get, supportedLiquidXps::indexOf, supportedLiquidXps::size), supportedLiquidXps.get(0), v-> {}, COMMON_STORAGE));
+    public static final FactoryConfig<List<Identifier>> additionalLiquidFuels = COMMON_STORAGE.register(FactoryConfig.create("additionalLiquidFuels", null, ()-> ID_LIST_CODEC, Collections.emptyList(), v-> {}, COMMON_STORAGE));
 
 }

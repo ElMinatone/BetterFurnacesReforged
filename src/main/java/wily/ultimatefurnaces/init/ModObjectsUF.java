@@ -4,7 +4,7 @@ package wily.ultimatefurnaces.init;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -34,7 +34,7 @@ public class ModObjectsUF {
         ITEMS.register();
     }
 
-    private static Item.Properties uniqueStackItemProperties(ResourceLocation id){
+    private static Item.Properties uniqueStackItemProperties(Identifier id){
         return FactoryAPIPlatform.setupItemProperties(new Item.Properties(), id).stacksTo(1);
     }
 

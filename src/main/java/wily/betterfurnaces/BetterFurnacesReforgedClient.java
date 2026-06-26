@@ -73,12 +73,12 @@ public class BetterFurnacesReforgedClient {
         FactoryAPIClient.registerConfigScreen(FactoryAPIPlatform.getModInfo(BetterFurnacesReforged.MOD_ID), BFRConfigScreen::new);
         FactoryAPIClient.PlayerEvent.JOIN_EVENT.register(localPlayer -> {
             if (UpCheck.checkFailed){
-                localPlayer.displayClientMessage(Component.Serializer.fromJson(I18n.get(BetterFurnacesReforged.MOD_ID+".update.failed")/*? if >=1.20.5 {*/, localPlayer.registryAccess()/*?}*/), false);
+                localPlayer.sendSystemMessage(Component.literal(I18n.get(BetterFurnacesReforged.MOD_ID+".update.failed")));
                 UpCheck.checkFailed = false;
             } else if (UpCheck.needsUpdateNotify){
-                localPlayer.displayClientMessage(Component.Serializer.fromJson(I18n.get(BetterFurnacesReforged.MOD_ID+".update.speech")/*? if >=1.20.5 {*/, localPlayer.registryAccess()/*?}*/), false);
-                localPlayer.displayClientMessage(Component.Serializer.fromJson(I18n.get(BetterFurnacesReforged.MOD_ID+".update.version",  BetterFurnacesReforged.MC_VERSION.get() + "-" + BetterFurnacesReforged.VERSION.get(), UpCheck.updateVersionString)/*? if >=1.20.5 {*/, localPlayer.registryAccess()/*?}*/), false);
-                localPlayer.displayClientMessage(Component.Serializer.fromJson(I18n.get(BetterFurnacesReforged.MOD_ID+".update.buttons", UpCheck.DOWNLOAD_LINK)/*? if >=1.20.5 {*/, localPlayer.registryAccess()/*?}*/), false);
+                localPlayer.sendSystemMessage(Component.literal(I18n.get(BetterFurnacesReforged.MOD_ID+".update.speech")));
+                localPlayer.sendSystemMessage(Component.literal(I18n.get(BetterFurnacesReforged.MOD_ID+".update.version",  BetterFurnacesReforged.MC_VERSION.get() + "-" + BetterFurnacesReforged.VERSION.get(), UpCheck.updateVersionString)));
+                localPlayer.sendSystemMessage(Component.literal(I18n.get(BetterFurnacesReforged.MOD_ID+".update.buttons", UpCheck.DOWNLOAD_LINK)));
                 UpCheck.needsUpdateNotify = false;
             }
         });

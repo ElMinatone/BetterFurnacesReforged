@@ -11,6 +11,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 import wily.betterfurnaces.init.BlockEntityTypes;
 import wily.betterfurnaces.inventory.FuelVerifierMenu;
@@ -65,7 +67,7 @@ public class FuelVerifierBlockEntity extends InventoryBlockEntity {
     }
 
     public void tick(BlockState blockState) {
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             ItemStack fuel = inventory.getItem(0);
             if (!(fuel.isEmpty()))
             burnTime = FuelManager.getBurnTime(fuel);
@@ -73,15 +75,15 @@ public class FuelVerifierBlockEntity extends InventoryBlockEntity {
         }
     }
 
-    public void /*? if <1.20.5 {*//*load(CompoundTag tag)*//*?} else {*/loadAdditional(CompoundTag tag, HolderLookup.Provider provider)/*?}*/ {
-        super./*? if <1.20.5 {*//*load(tag)*//*?} else {*/loadAdditional(tag, provider)/*?}*/;
-        this.burnTime = CompoundTagUtil.getInt(tag, "BurnTime").orElse(0);
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        this.burnTime = input.getIntOr("BurnTime", 0);
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag/*? if >=1.20.5 {*/, HolderLookup.Provider provider/*?}*/) {
-        tag.putInt("BurnTime", this.burnTime);
-        super.saveAdditional(tag/*? if >=1.20.5 {*/, provider/*?}*/);
+    public void saveAdditional(ValueOutput output) {
+        output.putInt("BurnTime", this.burnTime);
+        super.saveAdditional(output);
     }
 
 

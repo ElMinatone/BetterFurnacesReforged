@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
+    "lit=false": {
       "model": "betterfurnacesreforged:block/ultimate_furnace"
+    },
+    "lit=true": {
+      "model": "betterfurnacesreforged:block/ultimate_furnace_on"
     }
   }
 }

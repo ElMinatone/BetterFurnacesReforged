@@ -1,7 +1,7 @@
 package wily.betterfurnaces;
 
 import net.minecraft.SharedConstants;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.RecipeType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,14 +34,14 @@ public class BetterFurnacesReforged {
 
     public static final String MOD_ID = "betterfurnacesreforged";
     public static final Supplier<String> VERSION =  FactoryAPIPlatform.getModInfo(MOD_ID)::getVersion;
-    public static final Supplier<String> MC_VERSION = SharedConstants.getCurrentVersion()::getName;
+    public static final Supplier<String> MC_VERSION = SharedConstants.getCurrentVersion()::name;
 
     public static final Logger LOGGER = LogManager.getLogger();
 
     public BetterFurnacesReforged() {
         init();
         //? if forge || neoforge {
-        if (FMLEnvironment.dist == Dist.CLIENT)
+        if (FMLEnvironment.getDist() == Dist.CLIENT)
             BetterFurnacesReforgedClient.init();
         //?}
     }
@@ -77,7 +77,7 @@ public class BetterFurnacesReforged {
 
     }
 
-    public static ResourceLocation createModLocation(String path){
+    public static Identifier createModLocation(String path){
         return FactoryAPI.createLocation(MOD_ID, path);
     }
 

@@ -1,6 +1,6 @@
-{
+﻿{
   "model": {
-    "type": "model",
+    "type": "minecraft:model",
     "model": "betterfurnacesreforged:item/gold_conductor_block"
   }
 }

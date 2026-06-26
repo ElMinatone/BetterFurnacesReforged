@@ -1,0 +1,9 @@
+{
+  "parent": "betterfurnacesreforged:block/orientable_front_overlay_on",
+  "textures": {
+    "top": "betterfurnacesreforged:block/steel_top",
+    "side": "betterfurnacesreforged:block/steel_side",
+    "front": "betterfurnacesreforged:block/steel_front",
+    "overlay": "betterfurnacesreforged:block/frontactive"
+  }
+}

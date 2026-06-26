@@ -1,6 +1,6 @@
-{
+﻿{
   "model": {
-    "type": "model",
+    "type": "minecraft:model",
     "model": "betterfurnacesreforged:item/autoinput_upgrade"
   }
 }

@@ -1,6 +1,6 @@
-{
+﻿{
   "model": {
-    "type": "model",
+    "type": "minecraft:model",
     "model": "betterfurnacesreforged:item/factory_upgrade"
   }
 }

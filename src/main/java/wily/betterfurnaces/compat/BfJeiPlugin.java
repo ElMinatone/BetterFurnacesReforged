@@ -22,13 +22,13 @@ import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import mezz.jei.api.registration.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -60,7 +60,7 @@ import java.util.List;
 @JeiPlugin
 public class BfJeiPlugin implements IModPlugin {
 	@Override
-	public ResourceLocation getPluginUid() {
+	public Identifier getPluginUid() {
 		return BetterFurnacesReforged.createModLocation("_plugin");
 	}
 	@Override
@@ -158,7 +158,7 @@ public class BfJeiPlugin implements IModPlugin {
 			this.cachedProgressAnim = CacheBuilder.newBuilder().maximumSize(25).build(CacheLoader.from(cookTime->Pair.of(guiHelper.drawableBuilder(CobblestoneGeneratorScreen.GUI, 176, 24, 17, 12).buildAnimated(cookTime, IDrawableAnimated.StartDirection.LEFT, false), guiHelper.drawableBuilder(CobblestoneGeneratorScreen.GUI, 176, 36, 17, 12).buildAnimated(cookTime, IDrawableAnimated.StartDirection.RIGHT, false))));
 		}
 		@Override
-		public void draw(CobblestoneGeneratorRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics graphics, double mouseX, double mouseY) {
+		public void draw(CobblestoneGeneratorRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphicsExtractor graphics, double mouseX, double mouseY) {
 			FactoryScreenUtil.renderScaled(graphics.pose(),  (float) recipe.duration() / 20 + "s", 62, 45, 0.75f, 0x7E7E7E, false);
 			CobblestoneGeneratorScreen.renderStretchedFluid(graphics, 12, 23, 17,12, CobblestoneGeneratorScreen.lavaInstance, false);
 			CobblestoneGeneratorScreen.renderStretchedFluid(graphics, 55, 23, 17,12, CobblestoneGeneratorScreen.waterInstance, true);

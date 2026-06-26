@@ -1,8 +1,9 @@
 package wily.betterfurnaces.client.screen;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -16,7 +17,11 @@ public abstract class AbstractBasicScreen<T extends AbstractContainerMenu> exten
 
     protected final List<Renderable> renderables = new ArrayList<>();
     public AbstractBasicScreen(T p_97741_, Inventory p_97742_, Component p_97743_) {
-        super(p_97741_, p_97742_, p_97743_);
+        this(p_97741_, p_97742_, p_97743_, 176, 166);
+    }
+
+    public AbstractBasicScreen(T p_97741_, Inventory p_97742_, Component p_97743_, int imageWidth, int imageHeight) {
+        super(p_97741_, p_97742_, p_97743_, imageWidth, imageHeight);
     }
 
     @Override
@@ -36,31 +41,30 @@ public abstract class AbstractBasicScreen<T extends AbstractContainerMenu> exten
     }
 
     @Override
-    public void render(GuiGraphics graphics, int i, int j, float f) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int i, int j, float f) {
         //? if <1.20.2 {
         /*renderBackground(graphics);
         *///?}
-        super.render(graphics, i, j, f);
-        renderTooltip(graphics,i,j);
-        IWindowWidget.super.render(graphics,i,j,f);
+        super.extractRenderState(graphics, i, j, f);
+        IWindowWidget.super.extractRenderState(graphics,i,j,f);
     }
 
     @Override
-    public boolean mouseClicked(double d, double e, int i) {
-        if (IWindowWidget.super.mouseClicked(d,e,i)) return true;
-        return super.mouseClicked(d, e, i);
+    public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
+        if (IWindowWidget.super.mouseClicked(event, bl)) return true;
+        return super.mouseClicked(event, bl);
     }
 
     @Override
-    public boolean mouseReleased(double d, double e, int i) {
+    public boolean mouseReleased(MouseButtonEvent event) {
         this.setDragging(false);
-        if (IWindowWidget.super.mouseReleased(d,e,i)) return true;
-        return super.mouseReleased(d, e, i);
+        if (IWindowWidget.super.mouseReleased(event)) return true;
+        return super.mouseReleased(event);
     }
     @Override
-    public boolean mouseDragged(double d, double e, int i, double f, double g) {
-        if (IWindowWidget.super.mouseDragged(d,e,i,f,g)) return true;
-        return super.mouseDragged(d, e, i, f, g);
+    public boolean mouseDragged(MouseButtonEvent event, double f, double g) {
+        if (IWindowWidget.super.mouseDragged(event, f, g)) return true;
+        return super.mouseDragged(event, f, g);
     }
 
     @Override

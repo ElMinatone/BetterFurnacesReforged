@@ -1,8 +1,8 @@
 package wily.betterfurnaces.client.screen;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import wily.betterfurnaces.BetterFurnacesReforged;
 import wily.betterfurnaces.inventory.ForgeMenu;
@@ -15,14 +15,14 @@ import static wily.betterfurnaces.client.screen.BetterFurnacesDrawables.ENERGY_C
 
 
 public class ForgeScreen extends SmeltingScreen<ForgeMenu> {
-    public static final ResourceLocation GUI = BetterFurnacesReforged.createModLocation("textures/container/forge_gui.png");
+    public static final Identifier GUI = BetterFurnacesReforged.createModLocation("textures/container/forge_gui.png");
 
     public ForgeScreen(ForgeMenu t, Inventory inv, Component name) {
-        super(t, inv, name);
+        super(t, inv, name, 176, 206);
     }
 
     @Override
-    public ResourceLocation getGuiLocation() {
+    public Identifier getGuiLocation() {
         return GUI;
     }
 
@@ -48,13 +48,7 @@ public class ForgeScreen extends SmeltingScreen<ForgeMenu> {
 
 
     @Override
-    protected void init() {
-        imageHeight = 206;
-        super.init();
-    }
-
-    @Override
-    protected void blitSlotsLayer(GuiGraphics graphics, boolean input, boolean both, boolean fuel, boolean output){
+    protected void blitSlotsLayer(GuiGraphicsExtractor graphics, boolean input, boolean both, boolean fuel, boolean output){
         if (input || both) {
             FactoryGuiGraphics.of(graphics).blit(WIDGETS, leftPos + 26, topPos + 61, 0, 171, 18, 18);
             FactoryGuiGraphics.of(graphics).blit(WIDGETS, leftPos + 44, topPos + 61, 0, 171, 18, 18);
@@ -69,7 +63,7 @@ public class ForgeScreen extends SmeltingScreen<ForgeMenu> {
     }
 
     @Override
-    protected void blitSmeltingSprites(GuiGraphics graphics) {
+    protected void blitSmeltingSprites(GuiGraphicsExtractor graphics) {
         int i;
         if (this.getMenu().getBurnTime() > 0) {
             i = this.getMenu().getBurnLeftScaled(13);

@@ -23,6 +23,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 import wily.betterfurnaces.blocks.CobblestoneGeneratorBlock;
 import wily.betterfurnaces.init.BlockEntityTypes;
@@ -130,7 +132,7 @@ public class CobblestoneGeneratorBlockEntity extends InventoryBlockEntity {
     }
 
     protected List</*? if >1.20.1 {*/RecipeHolder<CobblestoneGeneratorRecipe>/*?} else {*//*CobblestoneGeneratorRecipe*//*?}*/> getSortedCobRecipes(){
-        return CommonRecipeManager.byType(ModObjects.ROCK_GENERATING_RECIPE.get()).stream().sorted(Comparator.comparing(o -> o.id()/*? if >=1.21.2 {*/.location()/*?}*/.getPath())).toList();
+        return CommonRecipeManager.byType(ModObjects.ROCK_GENERATING_RECIPE.get()).stream().sorted(Comparator.comparing(o -> o.id()/*? if >=1.21.2 {*/.identifier()/*?}*/.getPath())).toList();
     }
 
     public void initRecipes() {
@@ -164,12 +166,12 @@ public class CobblestoneGeneratorBlockEntity extends InventoryBlockEntity {
         if (recipes.isEmpty()) return;
 
 
-        if (recipe == null && recipes != null || level.isClientSide && recipes.indexOf(recipe) != resultType) {
+        if (recipe == null && recipes != null || level.isClientSide() && recipes.indexOf(recipe) != resultType) {
             setRecipe(resultType);
             updateBlockState();
         }
 
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             if (actualCobTime != getCobTime()) {
                 actualCobTime = getCobTime();
             }
@@ -177,7 +179,7 @@ public class CobblestoneGeneratorBlockEntity extends InventoryBlockEntity {
                 cobTime = getCobTime();
             }
 
-            if (!getLevel().isClientSide) forceUpdateAllStates();
+            if (!getLevel().isClientSide()) forceUpdateAllStates();
             ItemStack output = inventory.getItem(OUTPUT);
             ItemStack upgrade = inventory.getItem(UPGRADE);
             ItemStack upgrade1 = inventory.getItem(UPGRADE1);
@@ -207,7 +209,7 @@ public class CobblestoneGeneratorBlockEntity extends InventoryBlockEntity {
 
                 cobTime = 0;
 
-                RandomSource rand = level.random;
+                RandomSource rand = level.getRandom();
                 double d0 = (double) worldPosition.getX() + 0.5D;
                 double d1 = (double) worldPosition.getY() + 0.5D;
                 double d2 = (double) worldPosition.getZ() + 0.5D;
@@ -260,22 +262,22 @@ public class CobblestoneGeneratorBlockEntity extends InventoryBlockEntity {
         else return 1;
     }
     @Override
-    public void /*? if <1.20.5 {*//*load(CompoundTag tag)*//*?} else {*/loadAdditional(CompoundTag tag, HolderLookup.Provider provider)/*?}*/ {
-        super./*? if <1.20.5 {*//*load(tag)*//*?} else {*/loadAdditional(tag, provider)/*?}*/;
-        this.cobTime = CompoundTagUtil.getInt(tag, "CobTime").orElse(0);
-        this.resultType = CompoundTagUtil.getInt(tag, "ResultType").orElse(0);
-        this.actualCobTime = CompoundTagUtil.getInt(tag, "ActualCobTime").orElse(0);
-        this.autoOutput = CompoundTagUtil.getBoolean(tag, "autoOutput").orElse(false);
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        this.cobTime = input.getIntOr("CobTime", 0);
+        this.resultType = input.getIntOr("ResultType", 0);
+        this.actualCobTime = input.getIntOr("ActualCobTime", 0);
+        this.autoOutput = input.getBooleanOr("autoOutput", false);
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag/*? if >=1.20.5 {*/, HolderLookup.Provider provider/*?}*/) {
-        tag.putInt("CobTime", this.cobTime);
-        tag.putInt("ResultType", this.resultType);
-        tag.putInt("ActualCobTime", this.actualCobTime);
-        tag.putBoolean("autoOutput", this.autoOutput);
+    public void saveAdditional(ValueOutput output) {
+        output.putInt("CobTime", this.cobTime);
+        output.putInt("ResultType", this.resultType);
+        output.putInt("ActualCobTime", this.actualCobTime);
+        output.putBoolean("autoOutput", this.autoOutput);
 
-        super.saveAdditional(tag/*? if >=1.20.5 {*/, provider/*?}*/);
+        super.saveAdditional(output);
     }
 
     @Override

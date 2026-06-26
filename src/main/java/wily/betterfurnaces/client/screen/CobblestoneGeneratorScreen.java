@@ -1,9 +1,8 @@
 package wily.betterfurnaces.client.screen;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluids;
@@ -20,7 +19,7 @@ import wily.factoryapi.util.FluidRenderUtil;
 import java.util.List;
 
 public class CobblestoneGeneratorScreen extends AbstractBasicScreen<CobblestoneGeneratorMenu> {
-    public static final ResourceLocation GUI = BetterFurnacesReforged.createModLocation("textures/container/cobblestone_generator_gui.png");
+    public static final Identifier GUI = BetterFurnacesReforged.createModLocation("textures/container/cobblestone_generator_gui.png");
     Inventory playerInv;
     Component name;
 
@@ -43,23 +42,24 @@ public class CobblestoneGeneratorScreen extends AbstractBasicScreen<CobblestoneG
         addNestedRenderable(autoOutputButton = new FactoryDrawableButton(leftPos + 9,topPos + 55, BetterFurnacesDrawables.SURFACE_BUTTON).icon(BetterFurnacesDrawables.getButtonIcon(1)).onPress((b, i)-> CommonNetwork.sendToServer(new CobblestoneGeneratorSyncPayload(this.getMenu().getPos(), menu.hasAutoOutput() ? CobblestoneGeneratorSyncPayload.Sync.DISABLE_AUTO_OUTPUT : CobblestoneGeneratorSyncPayload.Sync.AUTO_OUTPUT))));
     }
 
-    public static void renderStretchedFluid(GuiGraphics graphics, int x, int y, int width, int height, FluidInstance fluid, boolean hasColor){
-        if (hasColor) FactoryGuiGraphics.of(graphics).setColor(FluidRenderUtil.getFixedColor(fluid));
+    public static void renderStretchedFluid(GuiGraphicsExtractor graphics, int x, int y, int width, int height, FluidInstance fluid, boolean hasColor){
+        if (hasColor) FactoryGuiGraphics.of(graphics).setBlitColor(FluidRenderUtil.getFixedColor(fluid));
         FactoryGuiGraphics.of(graphics).blit(x, y, 0, width, height, FactoryAPIClient.getFluidStillTexture(fluid.getFluid()));
-        if (hasColor) FactoryGuiGraphics.of(graphics).clearColor();
+        if (hasColor) FactoryGuiGraphics.of(graphics).clearBlitColor();
     }
 
     @Override
-    protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+    public void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
+        wily.factoryapi.util.FactoryScreenUtil.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         FactoryGuiGraphics.of(graphics).blit(GUI, leftPos, topPos, 0, 0, this.imageWidth, this.imageHeight);
-        graphics.pose().pushPose();
-        graphics.pose().translate(leftPos + 88,topPos + 32,0);
-        graphics.pose().scale(0.75F,0.75F,0.75F);
-        graphics.pose().translate(-8,-8,0);
+        super.extractContents(graphics, mouseX, mouseY, partialTicks);
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(leftPos + 88,topPos + 32);
+        graphics.pose().scale(0.75F,0.75F);
+        graphics.pose().translate(-8,-8);
         ItemStack result = getMenu().be.getResult();
-        graphics.renderItem(result, 0, 0);
-        graphics.pose().popPose();
+        graphics.item(result, 0, 0);
+        graphics.pose().popMatrix();
         changeRecipeButton.clearTooltips().tooltip(result.getHoverName());
         autoOutputButton.select(menu.hasAutoOutput()).clearTooltips().tooltips(List.of(Component.translatable("tooltip." + BetterFurnacesReforged.MOD_ID + ".gui_auto_output"), Component.translatable("options." + (menu.hasAutoOutput() ? "on" : "off"))));
         int i;

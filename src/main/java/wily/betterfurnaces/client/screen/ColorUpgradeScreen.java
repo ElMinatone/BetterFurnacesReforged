@@ -1,7 +1,6 @@
 package wily.betterfurnaces.client.screen;
 
-import com.mojang.blaze3d.platform.Lighting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.nbt.CompoundTag;import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -59,19 +58,18 @@ public class ColorUpgradeScreen extends AbstractUpgradeScreen<ColorUpgradeMenu> 
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        super.render(graphics, mouseX, mouseY, partialTicks);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
+        super.extractRenderState(graphics, mouseX, mouseY, partialTicks);
         renderColorFurnace(graphics);
     }
 
-    protected void renderColorFurnace(GuiGraphics graphics) {
-        Lighting.setupFor3DItems();
-        graphics.pose().pushPose();
-        graphics.pose().translate(((float) width / 2 ), (this.topPos - 40),0);
-        graphics.pose().scale(4F,4F,1F);
-        graphics.pose().translate(-8, -8,0);
-        graphics.renderItem(displayStack, 0, 0);
-        graphics.pose().popPose();
+    protected void renderColorFurnace(GuiGraphicsExtractor graphics) {
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(((float) width / 2 ), (this.topPos - 40));
+        graphics.pose().scale(4F,4F);
+        graphics.pose().translate(-8, -8);
+        graphics.item(displayStack, 0, 0);
+        graphics.pose().popMatrix();
     }
 
 }

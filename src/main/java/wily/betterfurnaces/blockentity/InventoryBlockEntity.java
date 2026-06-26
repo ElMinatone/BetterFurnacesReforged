@@ -31,6 +31,8 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
 import wily.betterfurnaces.BetterFurnacesReforged;
 import wily.factoryapi.base.*;
@@ -78,7 +80,7 @@ public abstract class InventoryBlockEntity extends BlockEntity implements IInven
     public void breakDurabilityItem(ItemStack stack){
         if (!stack.isEmpty() && stack.isDamageableItem()) {
             //? if <1.20.5 {
-            /*stack.hurt(1, level.random, null);
+            /*stack.hurt(1, level.getRandom(), null);
             if (stack.getDamageValue() >= stack.getMaxDamage()) {
                 stack.shrink(1);
                 this.getLevel().playSound(null, this.getBlockPos(), SoundEvents.ITEM_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F);
@@ -93,25 +95,25 @@ public abstract class InventoryBlockEntity extends BlockEntity implements IInven
     }
 
     @Override
-    public void /*? if <1.20.5 {*//*load(CompoundTag tag)*//*?} else {*/loadAdditional(CompoundTag tag, HolderLookup.Provider provider)/*?}*/ {
-        super./*? if <1.20.5 {*//*load(tag)*//*?} else {*/loadAdditional(tag, provider)/*?}*/;
-        inventory.deserializeTag(CompoundTagUtil.getCompoundTagOrEmpty(tag, "inventory"));
-        this.lockKey = LockCode.fromTag(tag/*? if >=1.21.2 {*/, provider/*?}*/);
-        CompoundTagUtil.getString(tag, "CustomName").ifPresent(nameJson-> this.name = Component.Serializer.fromJson(nameJson/*? if >=1.20.5 {*/,provider/*?}*/));
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        input.read("inventory", CompoundTag.CODEC).ifPresent(inventory::deserializeTag);
+        this.lockKey = LockCode.fromTag(input);
+        this.name = BlockEntity.parseCustomNameSafe(input, "CustomName");
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag/*? if >=1.20.5 {*/, HolderLookup.Provider provider/*?}*/) {
-        super.saveAdditional(tag/*? if >=1.20.5 {*/, provider/*?}*/);
-        tag.put("inventory", inventory.serializeTag());
-        this.lockKey.addToTag(tag/*? if >=1.21.2 {*/, provider/*?}*/);
-        if (this.name != null) {
-            tag.putString("CustomName", Component.Serializer.toJson(name/*? if >=1.20.5 {*/,provider/*?}*/));
-        }
+    public void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.store("inventory", CompoundTag.CODEC, inventory.serializeTag());
+        this.lockKey.addToTag(output);
+        output.storeNullable("CustomName", ComponentSerialization.CODEC, name);
     }
 
     public boolean canOpen(Player arg) {
-        return BaseContainerBlockEntity.canUnlock(arg, this.lockKey, this.getDisplayName());
+        if (this.lockKey.canUnlock(arg)) return true;
+        BaseContainerBlockEntity.sendChestLockedNotifications(this.getBlockPos().getCenter(), arg, this.getDisplayName());
+        return false;
     }
 
     protected abstract AbstractContainerMenu createMenu(int i, Inventory arg);
@@ -169,9 +171,9 @@ public abstract class InventoryBlockEntity extends BlockEntity implements IInven
         arg.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(inventory.getItems()));
     }
 
-    public void removeComponentsFromTag(CompoundTag arg) {
-        arg.remove("CustomName");
-        arg.remove("lock");
+    public void removeComponentsFromTag(ValueOutput output) {
+        output.discard("CustomName");
+        output.discard("lock");
     }
     //?}
 }

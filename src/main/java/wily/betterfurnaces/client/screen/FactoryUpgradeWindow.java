@@ -1,6 +1,6 @@
 package wily.betterfurnaces.client.screen;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
@@ -10,6 +10,7 @@ import wily.betterfurnaces.blockentity.FactoryUpgradeSettings;
 import wily.betterfurnaces.network.OrientationSyncPayload;
 import wily.betterfurnaces.network.SettingsSyncPayload;
 import wily.factoryapi.base.BlockSide;
+import wily.factoryapi.base.client.FactoryGuiGraphics;
 import wily.factoryapi.base.client.FactoryScreenWindow;
 import wily.factoryapi.base.client.drawable.AbstractDrawableButton;
 import wily.factoryapi.base.client.drawable.FactoryDrawableButton;
@@ -66,10 +67,10 @@ public class FactoryUpgradeWindow extends FactoryScreenWindow<SmeltingScreen<?>>
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, int i, int j, float f) {
+    protected void renderBg(GuiGraphicsExtractor guiGraphics, int i, int j, float f) {
         super.renderBg(guiGraphics,i,j,f);
         if (parent.getMenu().getRedstoneMode() == 4)
-            FactoryScreenUtil.drawString(guiGraphics.pose(),parent.getMenu().getComSub() + "",getX() + (parent.getMenu().getComSub() > 9 ? 39 : 42),getY() + 86,0xFFFFFF,true);
+            FactoryScreenUtil.drawString(FactoryGuiGraphics.of(guiGraphics).pose(),parent.getMenu().getComSub() + "",getX() + (parent.getMenu().getComSub() > 9 ? 39 : 42),getY() + 86,0xFFFFFF,true);
     }
 
     @Override
